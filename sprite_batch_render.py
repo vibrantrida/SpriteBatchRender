@@ -28,7 +28,7 @@ Multiple frames can be rendered. The animation Frame Range is read from the regu
 Start Frame and End Frame rendering properties.
 
 Usage:
-	Set your camera (called "Camera") to track an object placed at the origo. 
+	Set your camera (called "Camera") to track an object placed at the origo.
 	Place your camera to the distance and height you'd like it to render the object from.
 	
 	See Sprite Batch Rendering section of the Render-tab for controls.
@@ -64,30 +64,8 @@ bl_info = \
 class SpriteRenderSettings(bpy.types.PropertyGroup):
 	path = StringProperty (
 		name = "Sprite render path",
-		description = """Where to save the sprite frames.\
- %s = frame name\
- %d = rotation number""",
-		default = "C:/temp/sprite%s%s.png"
-	)
-
-	steps = IntProperty (
-		name = "Steps",
-		description = "The number of different angles to render",
-		default = 8
-	)
-
-	framenames = StringProperty (
-		name = "Frame names",
-		description = """The naming scheme for all frames.
- Each letter corresponds to a single frame.""",
-		default = "ABCDEFGHIJKLMN"
-	)
-
-	anglenames = StringProperty (
-		name = "Step names",
-		description = """The naming scheme for rotation steps.
- Each letter corresponds to a single camera angle.""",
-		default = "12345678"
+		description = """Where to save the sprite frames.""",
+		default = "C:/tmp/"
 	)
 
 	target = StringProperty (
@@ -108,15 +86,12 @@ class SpriteRenderOperator(bpy.types.Operator):
 			context.scene,
 			context.scene.sprite_render.target,
 			context.scene.sprite_render.path,
-			context.scene.sprite_render.steps,
-			context.scene.sprite_render.framenames,
-			context.scene.sprite_render.anglenames,
 			context.scene.frame_start,
 			context.scene.frame_end
 		)
 		return {'FINISHED'}
 
-	def render(self, scene, obj_name, filepath, steps, framenames, anglenames,\
+	def render(self, scene, obj_name, filepath,\
 			startframe=0, endframe=0):
 		camera = scene.camera
 		oldframe = scene.frame_current
@@ -126,54 +101,106 @@ class SpriteRenderOperator(bpy.types.Operator):
 			return
 		obj = scene.objects[obj_name]
 
-		if steps > len(anglenames) or steps <= 0:
-			self.report({'ERROR_INVALID_INPUT'}, "Not enough step names specified for current rotation step count")
-			return
+		# go through all currently selected meshes
+		for selectedObject in bpy.context.selected_objects:
+			# skip non-meshes
+			if selectedObject.type != 'MESH':
+				continue
 
-		stepnames = anglenames
-		
-		if endframe-startframe > len(framenames)-1:
-			self.report({'ERROR_INVALID_INPUT'}, "Not enough frames in custom framenames")
-			return
+			steps = 8
+			stepnames = "12345678"
+			framenames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			subframenames = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-		# print("steps " + str(stepnames))
-		# print("object:", obj_name, obj)
+			# print("steps " + str(stepnames))
+			# print("object:", obj_name, obj)
 
-		frame = startframe
-		count = 0
-		obj.rotation_mode = 'XYZ'
-		orig_rotation = obj.rotation_euler.z
-		
-		for f in range(startframe, endframe+1):
-			scene.frame_current = f
-			relative_frame = f - startframe
+			frame = startframe
+			count = 0
+			obj.rotation_mode = 'XYZ'
+			orig_rotation = obj.rotation_euler.z
+			sprSub = 0
 
-			print()
-			
-			for i in range(0, steps):
-				angle = ((math.pi*2.0) / steps) * i
+			for f in range(startframe, endframe+1):
+				scene.frame_current = f
+				relative_frame = f - startframe
 
-				obj.rotation_euler.z = orig_rotation - angle
-				print (obj.rotation_euler.z)
+				# only 1 step if there's no rotation
+				norotation = bpy.data.objects[obj.name]['NoRotation']
+				if norotation == 1:
+					steps = 1
 
-				scene.update()
-				bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-				
-				stepname = stepnames[i]
-				name = framenames[relative_frame]
-				
-				scene.render.filepath = filepath % (name, stepname)
-				bpy.ops.render.render(animation=False, write_still=True)
-				
-				#print ("%d:%s: %f,%f" % (f, stepname, camera.location.x, camera.location.y))
-				count += 1
-				
-		print ("Rendered %d shots" % (count))
-		scene.frame_current = oldframe
+				mirror = bpy.data.objects[obj.name]['Mirror']
 
-		obj.rotation_euler.z = orig_rotation
-			
-		
+				print()
+
+				# increase subsprite number
+				if (f % (len(framenames) + 1)) == 0:
+					sprSub += 1
+
+				# too many frames
+				if relative_frame > (len(framenames) * len(subframenames)):
+					self.report({'ERROR_INVALID_INPUT'}, "Too many frames!")
+					break
+					return
+
+				for i in range(0, steps):
+					# stop full rotation if mirrored
+					if norotation == 0 and mirror == 1 and i >= 5:
+						break
+
+					angle = ((math.pi*2.0) / steps) * i
+
+					obj.rotation_euler.z = orig_rotation - angle
+					print (obj.rotation_euler.z)
+
+					scene.update()
+					bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+
+					# if norotation is set, force angle 0
+					if norotation == 0:
+						stepname = stepnames[i]
+					else:
+						stepname = "0"
+
+					# i think the following is wrong
+					name = framenames[relative_frame % len(framenames)]
+
+					actobjectname = selectedObject.name
+					sprName = bpy.data.objects[actobjectname]['SpriteName']
+					sprSubString = subframenames[sprSub]
+
+					# if there are more than 26 frames, remove the last character and append subsprite
+					if (endframe + 1) > len(framenames) + 1:
+						sprName = sprName[:-1]
+					else:
+						sprSubString = ""
+
+					# handle mirroring
+					if norotation == 0 and mirror == 1:
+						# 2 and 8
+						if i == 1:
+							stepname = stepname + name + "8"
+						# 3 and 7
+						elif i == 2:
+							stepname = stepname + name + "7"
+						# 4 and 6
+						elif i == 3:
+							stepname = stepname + name + "6"
+
+					scene.render.filepath = filepath + sprName + sprSubString + name + stepname
+					bpy.ops.render.render(animation=False, write_still=True)
+
+					#print ("%d:%s: %f,%f" % (f, stepname, camera.location.x, camera.location.y))
+					count += 1
+
+			print ("Rendered %d shots" % (count))
+			scene.frame_current = oldframe
+
+			obj.rotation_euler.z = orig_rotation
+
+
+
 
 class SpriteRenderPanel(bpy.types.Panel):
 	bl_idname = 'sprite_panel'
@@ -194,20 +221,7 @@ class SpriteRenderPanel(bpy.types.Panel):
 			l.column().label("Invalid target object '%s'!" % (props.target),
 			icon='ERROR')
 
-		l.row().prop(props, "steps", text="Rotation steps")
-		l.column().prop(props, "framenames", text="Frame names")
-
-		frames = context.scene.frame_end - context.scene.frame_start
-		if frames > len(props.framenames)-1:
-			l.column().label("Need at least %d custom framenames." % (frames), icon='ERROR')
-
-		l.column().prop(props, "anglenames", text="Step names")
-
-		if len(props.anglenames) < props.steps:
-			l.column().label("Need at least %d step names." % (props.steps),
-			icon='ERROR')
-
-		l.row().prop(props, "path", text="Path format")
+		l.row().prop(props, "path", text="Output path")
 		row = l.row()
 		row.operator("render.spriterender_operator", text="Render Batch", icon='RENDER_ANIMATION')
 
@@ -227,6 +241,6 @@ def unregister():
 	bpy.utils.unregister_class(SpriteRenderSettings)
 	del bpy.types.Scene.sprite_render
 
-	
-if __name__ == "__main__":  
-	register()  
+
+if __name__ == "__main__":
+	register()
