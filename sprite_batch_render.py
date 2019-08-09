@@ -166,8 +166,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 					else:
 						stepname = "0"
 
-					# i think the following is wrong
-					name = framenames[relative_frame % len(framenames)]
+					name = framenames[(f - 1) % len(framenames)]
 
 					actobjectname = selectedObject.name
 					sprName = bpy.data.objects[actobjectname]['SpriteName']
