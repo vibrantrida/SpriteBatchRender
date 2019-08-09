@@ -38,6 +38,7 @@ Usage:
 
 """
 
+import os
 import bpy
 import math
 import sys
@@ -93,6 +94,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 
 	def render(self, scene, obj_name, filepath,\
 			startframe=0, endframe=0):
+		os.system("cls")
 		camera = scene.camera
 		oldframe = scene.frame_current
 		
