@@ -105,6 +105,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 		for selectedObject in bpy.context.selected_objects:
 			# skip non-meshes
 			if selectedObject.type != 'MESH':
+				self.report({'ERROR_INVALID_INPUT'}, "'%s' is not a mesh object!" % (selectedObject.name))
 				continue
 
 			steps = 8
