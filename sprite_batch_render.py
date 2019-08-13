@@ -138,7 +138,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 				print()
 
 				# increase subsprite number
-				if (f % (len(framenames) + 1)) == 0:
+				if f > (len(framenames) * 2) and (f % (len(framenames) + 1)) == 0:
 					sprSub += 1
 
 				# too many frames
