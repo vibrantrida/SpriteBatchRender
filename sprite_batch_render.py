@@ -123,6 +123,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 			obj.rotation_mode = 'XYZ'
 			orig_rotation = obj.rotation_euler.z
 			sprSub = 0
+			sprSubCounter = scene.frame_current
 
 			for f in range(startframe, endframe+1):
 				scene.frame_current = f
@@ -138,8 +139,11 @@ class SpriteRenderOperator(bpy.types.Operator):
 				print()
 
 				# increase subsprite number
-				if f > (len(framenames) * 2) and (f % (len(framenames) + 1)) == 0:
-					sprSub += 1
+				sprSubCounter += 1
+				if sprSubCounter > len(framenames):
+					sprSubCounter = 1
+					if f > (len(framenames) * 2):
+						sprSub += 1
 
 				# too many frames
 				if f > (len(framenames) * len(subframenames)):
@@ -173,7 +177,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 					sprSubString = subframenames[sprSub]
 
 					# if there are more than 26 frames, remove the last character and append subsprite
-					if (f + 1) > len(framenames) + 1:
+					if f > len(framenames):
 						sprName = sprName[:-1]
 					else:
 						sprSubString = ""
