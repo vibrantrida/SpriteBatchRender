@@ -127,7 +127,6 @@ class SpriteRenderOperator(bpy.types.Operator):
 
 			for f in range(startframe, endframe+1):
 				scene.frame_set(f)
-				relative_frame = f - startframe
 
 				# only 1 step if there's no rotation
 				norotation = bpy.data.objects[obj.name]['NoRotation']
