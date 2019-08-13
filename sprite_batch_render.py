@@ -145,6 +145,9 @@ class SpriteRenderOperator(bpy.types.Operator):
 					if f > (len(framenames) * 2):
 						sprSub += 1
 
+				#print("f " + str(f))
+				#print("sprSubCounter " + str(sprSubCounter))
+				
 				# too many frames
 				if f > (len(framenames) * len(subframenames)):
 					self.report({'ERROR_INVALID_INPUT'}, "Too many frames!")
