@@ -173,7 +173,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 					sprSubString = subframenames[sprSub]
 
 					# if there are more than 26 frames, remove the last character and append subsprite
-					if (endframe + 1) > len(framenames) + 1:
+					if (f + 1) > len(framenames) + 1:
 						sprName = sprName[:-1]
 					else:
 						sprSubString = ""
