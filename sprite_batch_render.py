@@ -126,7 +126,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 			sprSubCounter = oldframe - 1
 
 			for f in range(startframe, endframe+1):
-				scene.frame_current = f
+				scene.frame_set(f)
 				relative_frame = f - startframe
 
 				# only 1 step if there's no rotation
@@ -204,7 +204,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 					count += 1
 
 			print ("Rendered %d shots" % (count))
-			scene.frame_current = oldframe
+			scene.frame_set(oldframe)
 
 			obj.rotation_euler.z = orig_rotation
 
