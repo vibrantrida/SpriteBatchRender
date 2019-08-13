@@ -113,7 +113,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 			steps = 8
 			stepnames = "12345678"
 			framenames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-			subframenames = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			subframenames = "0123456789"
 
 			# print("steps " + str(stepnames))
 			# print("object:", obj_name, obj)
