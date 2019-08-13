@@ -123,7 +123,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 			obj.rotation_mode = 'XYZ'
 			orig_rotation = obj.rotation_euler.z
 			sprSub = 0
-			sprSubCounter = scene.frame_current - 1
+			sprSubCounter = oldframe - 1
 
 			for f in range(startframe, endframe+1):
 				scene.frame_current = f
