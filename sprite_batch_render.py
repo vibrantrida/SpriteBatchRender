@@ -126,7 +126,6 @@ class SpriteRenderOperator(bpy.types.Operator):
 			# print("total_angles " + str(angles))
 			# print("object:", obj_name, obj)
 
-			frame = start_frame
 			count = 0
 			obj.rotation_mode = 'XYZ'
 			orig_rotation = obj.rotation_euler.z
