@@ -30,9 +30,9 @@ Start Frame and End Frame rendering properties.
 Usage:
 	Set your camera (called "Camera") to track an object placed at the origo.
 	Place your camera to the distance and height you'd like it to render the object from.
-	
+
 	See Sprite Batch Rendering section of the Render-tab for controls.
-	
+
 	Note: the rendering process can't be canceled once started, so make sure your
 	Frame Range and image resolution are correct.
 
@@ -81,7 +81,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 	bl_idname = "render.spriterender_operator"
 	bl_label = "Sprite Render Operator"
 	bl_options = {'REGISTER'}
-	
+
 	def execute(self, context):
 		self.render(
 			context.scene,
@@ -97,7 +97,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 		os.system("cls")
 		camera = scene.camera
 		old_frame = scene.frame_current
-		
+
 		if not obj_name in scene.objects:
 			self.report({'ERROR_INVALID_INPUT'}, "Target object '%s' not found!" % (obj_name))
 			return
@@ -112,8 +112,8 @@ class SpriteRenderOperator(bpy.types.Operator):
 
 			angles = "12345678"
 			frames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-			subsprites = "0123456789"			
-			total_angles = len(angles)			
+			subsprites = "0123456789"
+			total_angles = len(angles)
 			total_frames = len(frames)
 			total_subsprites = len(subsprites)
 
@@ -211,12 +211,12 @@ class SpriteRenderPanel(bpy.types.Panel):
 	bl_space_type = 'PROPERTIES'
 	bl_region_type = 'WINDOW'
 	bl_context = "render"
-	
+
 	def draw(self, context):
 		l = self.layout
 		framerow = l.row()
 		props = context.scene.sprite_render
-		
+
 		l.column().prop_search(props, "target", context.scene, "objects",\
 				icon='OBJECT_DATA', text="Target object")
 
@@ -228,7 +228,7 @@ class SpriteRenderPanel(bpy.types.Panel):
 		row = l.row()
 		row.operator("render.spriterender_operator", text="Render Batch", icon='RENDER_ANIMATION')
 
-		
+
 
 def register():
 	bpy.utils.register_class(SpriteRenderOperator)
@@ -236,8 +236,8 @@ def register():
 	bpy.utils.register_class(SpriteRenderSettings)
 
 	bpy.types.Scene.sprite_render = bpy.props.PointerProperty(type=SpriteRenderSettings)
-	
-	
+
+
 def unregister():
 	bpy.utils.unregister_class(SpriteRenderOperator)
 	bpy.utils.unregister_class(SpriteRenderPanel)
