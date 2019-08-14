@@ -80,7 +80,8 @@ class SpriteRenderSettings(bpy.types.PropertyGroup):
 	path = StringProperty (
 		name = "Sprite render path",
 		description = """Where to save the sprite frames.""",
-		default = "C:/tmp/"
+		default = "",
+		subtype = 'FILE_PATH'
 	)
 
 
