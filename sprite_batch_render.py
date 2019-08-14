@@ -110,8 +110,8 @@ class SpriteRenderOperator(bpy.types.Operator):
 				self.report({'ERROR_INVALID_INPUT'}, "'%s' is not a mesh object!" % (selectedObject.name))
 				continue
 
-			steps = 8
 			stepnames = "12345678"
+			steps = len(stepnames)
 			framenames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 			subframenames = "0123456789"
 
