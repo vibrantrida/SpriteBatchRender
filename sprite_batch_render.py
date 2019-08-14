@@ -117,6 +117,12 @@ class SpriteRenderOperator(bpy.types.Operator):
 			total_frames = len(frames)
 			total_subsprites = len(subsprites)
 
+			# too many frames
+			if end_frame > (total_frames * total_subsprites):
+				self.report({'ERROR_INVALID_INPUT'}, "Animation exceeds %i frames!" % total_frames * total_subsprites)
+				break
+				return
+
 			# print("total_angles " + str(angles))
 			# print("object:", obj_name, obj)
 
@@ -145,12 +151,6 @@ class SpriteRenderOperator(bpy.types.Operator):
 					current_subsprite_counter = 1
 					if f > (total_frames * 2):
 						current_subsprite += 1
-				
-				# too many frames
-				if f > (total_frames * total_subsprites):
-					self.report({'ERROR_INVALID_INPUT'}, "Animation exceeds %i frames!" % total_frames * total_subsprites)
-					break
-					return
 
 				for ang in range(0, total_angles):
 					# stop full rotation if mirrored
