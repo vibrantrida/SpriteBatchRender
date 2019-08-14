@@ -93,10 +93,10 @@ class SpriteRenderOperator(bpy.types.Operator):
 		return {'FINISHED'}
 
 	def render(self, scene, obj_name, filepath,\
-			startframe=0, endframe=0):
+			start_frame=0, end_frame=0):
 		os.system("cls")
 		camera = scene.camera
-		oldframe = scene.frame_current
+		old_frame = scene.frame_current
 		
 		if not obj_name in scene.objects:
 			self.report({'ERROR_INVALID_INPUT'}, "Target object '%s' not found!" % (obj_name))
@@ -104,106 +104,105 @@ class SpriteRenderOperator(bpy.types.Operator):
 		obj = scene.objects[obj_name]
 
 		# go through all currently selected meshes
-		for selectedObject in bpy.context.selected_objects:
+		for selected_object in bpy.context.selected_objects:
 			# skip non-meshes
-			if selectedObject.type != 'MESH':
-				self.report({'ERROR_INVALID_INPUT'}, "'%s' is not a mesh object!" % (selectedObject.name))
+			if selected_object.type != 'MESH':
+				self.report({'ERROR_INVALID_INPUT'}, "'%s' is not a mesh object!" % (selected_object.name))
 				continue
 
-			stepnames = "12345678"
-			steps = len(stepnames)
-			framenames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-			subframenames = "0123456789"
+			angles = "12345678"
+			frames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			subsprites = "0123456789"			
+			total_angles = len(angles)			
+			total_frames = len(frames)
+			total_subsprites = len(subsprites)
 
-			# print("steps " + str(stepnames))
+			# print("total_angles " + str(angles))
 			# print("object:", obj_name, obj)
 
-			frame = startframe
+			frame = start_frame
 			count = 0
 			obj.rotation_mode = 'XYZ'
 			orig_rotation = obj.rotation_euler.z
-			sprSub = 0
-			sprSubCounter = oldframe - 1
+			current_subsprite = 0
+			current_subsprite_counter = old_frame - 1
 
-			for f in range(startframe, endframe+1):
+			for f in range(start_frame, end_frame+1):
 				scene.frame_set(f)
 
 				# only 1 step if there's no rotation
-				norotation = bpy.data.objects[obj.name]['NoRotation']
-				if norotation == 1:
-					steps = 1
+				no_rotation = bpy.data.objects[obj.name]['NoRotation']
+				if no_rotation == 1:
+					total_angles = 1
 
 				mirror = bpy.data.objects[obj.name]['Mirror']
 
 				print()
 
 				# increase subsprite number
-				sprSubCounter += 1
-				if sprSubCounter > len(framenames):
-					sprSubCounter = 1
-					if f > (len(framenames) * 2):
-						sprSub += 1
-
-				#print("f " + str(f))
-				#print("sprSubCounter " + str(sprSubCounter))
+				current_subsprite_counter += 1
+				if current_subsprite_counter > total_frames:
+					current_subsprite_counter = 1
+					if f > (total_frames * 2):
+						current_subsprite += 1
 				
 				# too many frames
-				if f > (len(framenames) * len(subframenames)):
-					self.report({'ERROR_INVALID_INPUT'}, "Too many frames!")
+				if f > (total_frames * total_subsprites):
+					self.report({'ERROR_INVALID_INPUT'}, "Animation exceeds %i frames!" % total_frames * total_subsprites)
 					break
 					return
 
-				for i in range(0, steps):
+				for ang in range(0, total_angles):
 					# stop full rotation if mirrored
-					if norotation == 0 and mirror == 1 and i >= 5:
+					if no_rotation == 0 and mirror == 1 and ang >= 5:
 						break
 
-					angle = ((math.pi*2.0) / steps) * i
+					angle = ((math.pi*2.0) / total_angles) * ang
 
 					obj.rotation_euler.z = orig_rotation - angle
-					print (obj.rotation_euler.z)
+					print(obj.rotation_euler.z)
 
 					scene.update()
 					bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
 
-					# if norotation is set, force angle 0
-					if norotation == 0:
-						stepname = stepnames[i]
+					# if no_rotation is true, force angle 0
+					if no_rotation == 0:
+						angle_string = angles[ang]
 					else:
-						stepname = "0"
+						angle_string = "0"
 
-					name = framenames[(f - 1) % len(framenames)]
+					frame_string = frames[(f - 1) % total_frames]
 
-					actobjectname = selectedObject.name
-					sprName = bpy.data.objects[actobjectname]['SpriteName']
-					sprSubString = subframenames[sprSub]
+					sprite_string = bpy.data.objects[selected_object.name]['SpriteName']
+					subsprite_string = subsprites[current_subsprite]
 
-					# if there are more than 26 frames, remove the last character and append subsprite
-					if f > len(framenames):
-						sprName = sprName[:-1]
+					# if there are more than 26 frames, remove the last
+					# character from the sprite name and append the subsprite
+					if f > total_frames:
+						sprite_string = sprite_string[:-1]
 					else:
-						sprSubString = ""
+						subsprite_string = ""
 
 					# handle mirroring
-					if norotation == 0 and mirror == 1:
+					if no_rotation == 0 and mirror == 1:
 						# 2 and 8
-						if i == 1:
-							stepname = stepname + name + "8"
+						if ang == 1:
+							angle_string = angle_string + frame_string + "8"
 						# 3 and 7
-						elif i == 2:
-							stepname = stepname + name + "7"
+						elif ang == 2:
+							angle_string = angle_string + frame_string + "7"
 						# 4 and 6
-						elif i == 3:
-							stepname = stepname + name + "6"
+						elif ang == 3:
+							angle_string = angle_string + frame_string + "6"
 
-					scene.render.filepath = filepath + sprName + sprSubString + name + stepname
+					scene.render.filepath = filepath + sprite_string + subsprite_string + frame_string + angle_string
 					bpy.ops.render.render(animation=False, write_still=True)
 
-					#print ("%d:%s: %f,%f" % (f, stepname, camera.location.x, camera.location.y))
+					#print ("%d:%s: %f,%f" % (f, angle_string, camera.location.x, camera.location.y))
 					count += 1
 
 			print ("Rendered %d shots" % (count))
-			scene.frame_set(oldframe)
+			scene.frame_set(old_frame)
 
 			obj.rotation_euler.z = orig_rotation
 
