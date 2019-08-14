@@ -99,7 +99,7 @@ class SpriteRenderOperator(bpy.types.Operator):
 		old_frame = scene.frame_current
 
 		if not obj_name in scene.objects:
-			self.report({'ERROR_INVALID_INPUT'}, "Target object '%s' not found!" % (obj_name))
+			self.report({'ERROR_INVALID_INPUT'}, "Target object '%s' not found!" % obj_name)
 			return
 		obj = scene.objects[obj_name]
 
@@ -107,8 +107,16 @@ class SpriteRenderOperator(bpy.types.Operator):
 		for selected_object in bpy.context.selected_objects:
 			# skip non-meshes
 			if selected_object.type != 'MESH':
-				self.report({'ERROR_INVALID_INPUT'}, "'%s' is not a mesh object!" % (selected_object.name))
+				self.report({'ERROR_INVALID_INPUT'}, "'%s' is not a mesh object!" % selected_object.name)
 				continue
+
+			sprite_string = bpy.data.objects[selected_object.name]['SpriteName']
+
+			# SpriteName must be valid
+			if (len(sprite_string) != 4):
+				self.report({'ERROR_INVALID_INPUT'}, "%s: SpriteName must be exactly 4 characters!" % selected_object.name)
+				break
+				return
 
 			angles = "12345678"
 			frames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -169,7 +177,6 @@ class SpriteRenderOperator(bpy.types.Operator):
 
 					frame_string = frames[(f - 1) % total_frames]
 
-					sprite_string = bpy.data.objects[selected_object.name]['SpriteName']
 					subsprite_string = subsprites[current_subsprite]
 
 					# if there are more than 26 frames, remove the last
