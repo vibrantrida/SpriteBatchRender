@@ -120,6 +120,11 @@ class SpriteRenderOperator(bpy.types.Operator):
 			return
 
 		angles = "12345678"
+
+		sixteen_angles = bpy.data.objects[obj.name]['SixteenAngles']
+		if sixteen_angles == 1:
+			angles = "192A3B4C5D6E7F8G"
+
 		frames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		subsprites = "0123456789"
 		total_angles = len(angles)
@@ -157,8 +162,12 @@ class SpriteRenderOperator(bpy.types.Operator):
 					current_subsprite += 1
 
 			for ang in range(0, total_angles):
+				ang_max = 5
+				if sixteen_angles == 1:
+					ang_max = 9
+
 				# stop full rotation if mirrored
-				if no_rotation == 0 and mirror == 1 and ang >= 5:
+				if no_rotation == 0 and mirror == 1 and ang >= ang_max:
 					break
 
 				angle = ((math.pi*2.0) / total_angles) * ang
@@ -188,15 +197,38 @@ class SpriteRenderOperator(bpy.types.Operator):
 
 				# handle mirroring
 				if no_rotation == 0 and mirror == 1:
-					# 2 and 8
-					if ang == 1:
-						angle_string = angle_string + frame_string + "8"
-					# 3 and 7
-					elif ang == 2:
-						angle_string = angle_string + frame_string + "7"
-					# 4 and 6
-					elif ang == 3:
-						angle_string = angle_string + frame_string + "6"
+					if sixteen_angles == 0:
+						# 2 and 8
+						if ang == 1:
+							angle_string = angle_string + frame_string + "8"
+						# 3 and 7
+						elif ang == 2:
+							angle_string = angle_string + frame_string + "7"
+						# 4 and 6
+						elif ang == 3:
+							angle_string = angle_string + frame_string + "6"
+					else:
+						# 9 and G
+						if ang == 1:
+							angle_string = angle_string + frame_string + "G"
+						# 2 and 8
+						elif ang == 2:
+							angle_string = angle_string + frame_string + "8"
+						# A and F
+						elif ang == 3:
+							angle_string = angle_string + frame_string + "F"
+						# 3 and 7
+						elif ang == 4:
+							angle_string = angle_string + frame_string + "7"
+						# B and E
+						elif ang == 5:
+							angle_string = angle_string + frame_string + "E"
+						# 4 and 6
+						elif ang == 6:
+							angle_string = angle_string + frame_string + "6"
+						# C and D
+						elif ang == 7:
+							angle_string = angle_string + frame_string + "D"
 
 				scene.render.filepath = filepath + sprite_string + subsprite_string + frame_string + angle_string
 				bpy.ops.render.render(animation=False, write_still=True)
